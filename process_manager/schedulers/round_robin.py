@@ -5,23 +5,19 @@ from process_manager.schedulers.base import Scheduler
 
 
 class RoundRobinScheduler(Scheduler):
-    """Alternancia circular.
-
-    Este arquivo e a parte que vamos implementar em seguida.
-    """
 
     def __init__(self, cpu_fraction: int) -> None:
         super().__init__(cpu_fraction)
         self._queue: deque[Process] = deque()
 
     def add_process(self, process: Process) -> None:
-        raise NotImplementedError("Round Robin ainda sera implementado.")
+        self._queue.append(process)
 
     def pick_next(self) -> Process:
-        raise NotImplementedError("Round Robin ainda sera implementado.")
+        return self._queue.popleft()
 
     def on_process_preempted(self, process: Process) -> None:
-        raise NotImplementedError("Round Robin ainda sera implementado.")
+        self._queue.append(process)
 
     def has_ready_process(self) -> bool:
         return bool(self._queue)
