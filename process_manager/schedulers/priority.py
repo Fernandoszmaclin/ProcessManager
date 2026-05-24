@@ -8,13 +8,22 @@ class PriorityScheduler(Scheduler):
         self._ready: list[Process] = []
 
     def add_process(self, process: Process) -> None:
-        raise NotImplementedError("Escalonador por prioridade ainda nao implementado.")
+        self._ready.append(process)
 
     def pick_next(self) -> Process:
-        raise NotImplementedError("Escalonador por prioridade ainda nao implementado.")
+        next_process = min(
+            self._ready,
+            key=lambda process: (
+                process.priority_or_tickets,
+                process.creation_time,
+                process.pid,
+            ),
+        )
+        self._ready.remove(next_process)
+        return next_process
 
     def on_process_preempted(self, process: Process) -> None:
-        raise NotImplementedError("Escalonador por prioridade ainda nao implementado.")
+        self._ready.append(process)
 
     def has_ready_process(self) -> bool:
         return bool(self._ready)
