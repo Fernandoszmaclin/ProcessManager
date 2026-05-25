@@ -4,7 +4,7 @@ from .models import Process, SimulationConfig
 
 
 def parse_input_file(file_path: str) -> tuple[SimulationConfig, list[Process]]:
-    lines = Path(file_path).read_text(encoding="utf-8").splitlines()
+    lines = Path(file_path).read_text(encoding="utf-8-sig").splitlines()
 
     algorithm, cpu_fraction = lines[0].split("|")
     config = SimulationConfig(

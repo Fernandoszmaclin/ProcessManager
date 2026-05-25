@@ -6,3 +6,5 @@ __pycache__/
 .venv/
 venv/
 entradaEscalonador.txt
+.code-review-graph/
+docs/
