@@ -5,15 +5,16 @@ from process_manager.schedulers.base import Scheduler
 
 
 class RoundRobinScheduler(Scheduler):
-
     def __init__(self, cpu_fraction: int) -> None:
         super().__init__(cpu_fraction)
         self._queue: deque[Process] = deque()
 
     def add_process(self, process: Process) -> None:
+        # processo novo entra no final da fila
         self._queue.append(process)
 
     def pick_next(self) -> Process:
+        # primeiro da fila vai p/ CPU
         return self._queue.popleft()
 
     def on_process_preempted(self, process: Process) -> None:

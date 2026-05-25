@@ -4,6 +4,7 @@ from .models import Process, SimulationConfig
 
 
 def parse_input_file(file_path: str) -> tuple[SimulationConfig, list[Process]]:
+    # utf-8-sig para ignorar o BOM que o windows add em arquivos .txt
     lines = Path(file_path).read_text(encoding="utf-8-sig").splitlines()
 
     algorithm, cpu_fraction = lines[0].split("|")
@@ -24,4 +25,5 @@ def parse_input_file(file_path: str) -> tuple[SimulationConfig, list[Process]]:
             )
         )
 
+    # ordena processos por creation_time --> ordem cronologica
     return config, sorted(processes, key=lambda process: process.creation_time)

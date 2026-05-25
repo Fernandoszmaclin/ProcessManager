@@ -11,6 +11,7 @@ class PriorityScheduler(Scheduler):
         self._ready.append(process)
 
     def pick_next(self) -> Process:
+        # busca o processo prioritario da fila de prontos, desempata por creation_time e pid
         next_process = min(
             self._ready,
             key=lambda process: (

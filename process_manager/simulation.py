@@ -13,10 +13,11 @@ class Simulation:
         self.config = config
         self.processes = processes
         self.scheduler = scheduler
-        self.timeline: list[TimelineEntry] = []
-        self.current_time = 0
+        self.timeline: list[TimelineEntry] = []     # historico de execucao
+        self.current_time = 0                       # relogio virtual da simulacao
 
     def run(self) -> SimulationReport:
+        # copia de lista de processos
         pending = list(self.processes)
         finished_count = 0
 
@@ -34,13 +35,15 @@ class Simulation:
             time_to_run = min(self.config.cpu_fraction, process.remaining_time)
 
             for _ in range(time_to_run):
+                # aumenta o tempo de espera de quem ficou na fila
                 for ready_process in self.scheduler.ready_processes():
                     ready_process.ready_time += 1
 
                 self.current_time += 1
                 process.remaining_time -= 1
-                self._admit_new_processes(pending)
+                self._admit_new_processes(pending)      # verifica se algum processo novo chegou no meio da execucao atual
 
+            # registra o que aconteceu nesse slice de tempo
             self.timeline.append(
                 TimelineEntry(
                     start_time=slice_start,
@@ -50,6 +53,7 @@ class Simulation:
                 )
             )
 
+            # verifica estado do processo após usar a fatia de tempo
             if process.remaining_time == 0:
                 process.state = ProcessState.FINISHED
                 process.finish_time = self.current_time
@@ -61,6 +65,7 @@ class Simulation:
         return SimulationReport(self.timeline, self.processes)
 
     def _admit_new_processes(self, pending: list[Process]) -> None:
+        # verifica se existe processo pendente e se o tempo de criacao do processo e menor ou igual ao tempo atual da simulacao
         while pending and pending[0].creation_time <= self.current_time:
             process = pending.pop(0)
             process.state = ProcessState.READY
