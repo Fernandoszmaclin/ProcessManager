@@ -6,7 +6,7 @@ from .schedulers.round_robin import RoundRobinScheduler
 
 
 def create_scheduler(algorithm: str, cpu_fraction: int) -> Scheduler:
-    if algorithm == "alternanciaCircular":
+    if algorithm in ("alternanciaCircular", "alternancia"):
         return RoundRobinScheduler(cpu_fraction)
     if algorithm == "prioridade":
         return PriorityScheduler(cpu_fraction)
