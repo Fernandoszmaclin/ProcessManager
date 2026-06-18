@@ -1,4 +1,5 @@
 from .models import Process, ProcessState, SimulationConfig
+from .memory.memory import Memory
 from .report import SimulationReport, TimelineEntry
 from .schedulers.base import Scheduler
 
@@ -9,10 +10,12 @@ class Simulation:
         config: SimulationConfig,
         processes: list[Process],
         scheduler: Scheduler,
+        memory: Memory | None = None,
     ) -> None:
         self.config = config
         self.processes = processes
         self.scheduler = scheduler
+        self.memory = memory
         self.timeline: list[TimelineEntry] = []     # historico de execucao
         self.current_time = 0                       # relogio virtual da simulacao
 
@@ -41,6 +44,7 @@ class Simulation:
 
                 self.current_time += 1
                 process.remaining_time -= 1
+                self._access_memory(process)
                 self._admit_new_processes(pending)      # verifica se algum processo novo chegou no meio da execucao atual
 
             # registra o que aconteceu nesse slice de tempo
@@ -70,3 +74,13 @@ class Simulation:
             process = pending.pop(0)
             process.state = ProcessState.READY
             self.scheduler.add_process(process)
+
+    def _access_memory(self, process: Process) -> None:
+        if self.memory is None:
+            return
+
+        page_id = process.next_page_access()
+        if page_id is None:
+            return
+
+        self.memory.access_page(process, page_id, self.current_time)

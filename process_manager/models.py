@@ -45,6 +45,16 @@ class SimulationConfig:
             total_frames=total_frames,
         )
 
+    @property
+    def has_memory_config(self) -> bool:
+        return (
+            self.memory_policy is not None
+            and self.main_memory_size is not None
+            and self.page_frame_size is not None
+            and self.allocation_percentage is not None
+            and self.total_frames is not None
+        )
+
 
 @dataclass
 class Process:
