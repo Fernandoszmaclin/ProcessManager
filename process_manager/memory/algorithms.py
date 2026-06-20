@@ -34,7 +34,16 @@ class LRUPageReplacement(PageReplacementAlgorithm):
         current_time: int,
         config: SimulationConfig,
     ) -> MemoryFrame:
-        raise NotImplementedError("LRU sera implementado em uma etapa futura.")
+        if not frames:
+            raise ValueError("Nenhuma moldura disponivel para substituicao.")
+        return min(
+            frames,
+            key=lambda frame: (
+                frame.last_used_time,
+                frame.owner_pid,
+                frame.page_id,
+            ),
+        )
 
 
 class NUFPageReplacement(PageReplacementAlgorithm):
