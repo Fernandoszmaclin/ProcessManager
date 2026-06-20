@@ -12,7 +12,17 @@ class FIFOPageReplacement(PageReplacementAlgorithm):
         current_time: int,
         config: SimulationConfig,
     ) -> MemoryFrame:
-        raise NotImplementedError("FIFO sera implementado em uma etapa futura.")
+        if not frames:
+            raise ValueError("FIFO precisa de ao menos uma moldura candidata.")
+
+        return min(
+            frames,
+            key=lambda frame: (
+                frame.load_time,
+                frame.owner_pid,
+                frame.page_id,
+            ),
+        )
 
 
 class LRUPageReplacement(PageReplacementAlgorithm):
