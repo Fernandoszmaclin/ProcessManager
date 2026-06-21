@@ -1,8 +1,8 @@
-from .schedulers.base import Scheduler
-from .schedulers.cfs import CFSScheduler
-from .schedulers.lottery import LotteryScheduler
-from .schedulers.priority import PriorityScheduler
-from .schedulers.round_robin import RoundRobinScheduler
+from process_manager.schedulers.base import Scheduler
+from process_manager.schedulers.cfs import CFSScheduler
+from process_manager.schedulers.lottery import LotteryScheduler
+from process_manager.schedulers.priority import PriorityScheduler
+from process_manager.schedulers.round_robin import RoundRobinScheduler
 
 
 def create_scheduler(algorithm: str, cpu_fraction: int) -> Scheduler:

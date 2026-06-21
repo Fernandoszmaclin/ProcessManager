@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .models import Process, SimulationConfig
+from process_manager.models import Process, SimulationConfig
 
 
 def parse_input_file(file_path: str) -> tuple[SimulationConfig, list[Process]]:

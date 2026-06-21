@@ -5,8 +5,8 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from process_manager.main import run
 from process_manager.memory.models import MemorySimulationResult
+from process_manager.src.main import run
 
 
 class MainMemoryIntegrationTest(unittest.TestCase):
@@ -19,7 +19,7 @@ class MainMemoryIntegrationTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with patch("process_manager.main.MemoryComparisonRunner") as runner:
+            with patch("process_manager.src.main.MemoryComparisonRunner") as runner:
                 with redirect_stdout(io.StringIO()):
                     run(str(input_file))
 
@@ -34,7 +34,7 @@ class MainMemoryIntegrationTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            fake_runner = patch("process_manager.main.MemoryComparisonRunner")
+            fake_runner = patch("process_manager.src.main.MemoryComparisonRunner")
             with fake_runner as runner_class:
                 runner_class.return_value.run.return_value = MemorySimulationResult(
                     fifo_exchanges=1,

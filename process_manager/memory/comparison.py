@@ -4,8 +4,8 @@ from process_manager.models import Process, SimulationConfig
 from process_manager.memory.factory import create_page_replacement_algorithm
 from process_manager.memory.memory import Memory
 from process_manager.memory.models import MemorySimulationResult
-from process_manager.scheduler_factory import create_scheduler
-from process_manager.simulation import Simulation
+from process_manager.src.scheduler_factory import create_scheduler
+from process_manager.src.simulation import Simulation
 
 
 class MemoryComparisonRunner:

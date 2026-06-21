@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .models import Process
+from process_manager.models import Process
 
 
 @dataclass(frozen=True)

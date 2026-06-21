@@ -1,7 +1,8 @@
-from .models import Process, ProcessState, SimulationConfig
-from .memory.memory import Memory
+from process_manager.memory.memory import Memory
+from process_manager.models import Process, ProcessState, SimulationConfig
+from process_manager.schedulers.base import Scheduler
+
 from .report import SimulationReport, TimelineEntry
-from .schedulers.base import Scheduler
 
 
 class Simulation:

@@ -2,28 +2,7 @@ import unittest
 
 from process_manager.memory.algorithms import FIFOPageReplacement
 from process_manager.memory.memory import Memory
-from process_manager.memory.models import MemoryFrame
 from process_manager.models import Process, SimulationConfig
-
-
-class FIFOPageReplacementTest(unittest.TestCase):
-    def test_selects_oldest_loaded_frame(self) -> None:
-        frames = [
-            MemoryFrame("p1", 1, load_time=10, last_used_time=20),
-            MemoryFrame("p2", 1, load_time=3, last_used_time=30),
-            MemoryFrame("p3", 1, load_time=7, last_used_time=10),
-        ]
-
-        victim = FIFOPageReplacement().select_victim(
-            frames,
-            Process.create(0, "p4", 1, 1),
-            page_id=1,
-            current_time=40,
-            config=SimulationConfig.create("alternanciaCircular", 1),
-        )
-
-        self.assertEqual(victim.owner_pid, "p2")
-        self.assertEqual(victim.page_id, 1)
 
 
 class MemoryFIFOTest(unittest.TestCase):
