@@ -140,6 +140,13 @@ class NUFPageReplacement(PageReplacementAlgorithm):
 
 
 class OptimalPageReplacement(PageReplacementAlgorithm):
+    def __init__(self):
+        self._processes: dict[str, Process] = {}
+
+    def prepare(self, processes: list[Process]) -> None:
+        for process in processes:
+            self._processes[process.pid] = process
+
     def select_victim(
         self,
         frames: list[MemoryFrame],
@@ -148,4 +155,21 @@ class OptimalPageReplacement(PageReplacementAlgorithm):
         current_time: int,
         config: SimulationConfig,
     ) -> MemoryFrame:
-        raise NotImplementedError("Otimo sera implementado em uma etapa futura.")
+        if not frames:
+            raise ValueError("Nenhuma moldura disponivel para substituicao.")
+
+        def distance_key(frame: MemoryFrame) -> tuple:
+            proc = self._processes.get(frame.owner_pid)
+            if not proc:
+                return (float('-inf'), frame.owner_pid, frame.page_id)
+
+            current_index = proc.current_page_access_index
+            future = proc.page_access_sequence[current_index:]
+
+            for idx, page in enumerate(future):
+                if page == frame.page_id:
+                    return (-idx, frame.owner_pid, frame.page_id)
+
+            return (float('-inf'), frame.owner_pid, frame.page_id)
+
+        return min(frames, key=distance_key)

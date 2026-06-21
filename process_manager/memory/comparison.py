@@ -34,10 +34,9 @@ class MemoryComparisonRunner:
     def _run_algorithm(self, algorithm_name: str) -> int:
         processes = deepcopy(self.processes)
         scheduler = create_scheduler(self.config.algorithm, self.config.cpu_fraction)
-        memory = Memory(
-            self.config,
-            create_page_replacement_algorithm(algorithm_name),
-        )
+        algorithm = create_page_replacement_algorithm(algorithm_name)
+        algorithm.prepare(processes)
+        memory = Memory(self.config, algorithm)
 
         Simulation(self.config, processes, scheduler, memory).run()
         return memory.exchange_count

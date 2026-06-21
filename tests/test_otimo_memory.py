@@ -14,8 +14,6 @@ def _run_reference_string(
     config: SimulationConfig,
     process: Process,
 ) -> Memory:
-    """Reproduz o laco da Simulation: consome a sequencia de acessos do
-    processo na ordem, avancando current_page_access_index a cada acesso."""
     algorithm.prepare([process])
     memory = Memory(config, algorithm)
 
@@ -32,8 +30,6 @@ def _run_reference_string(
 
 class OptimalPageReplacementTest(unittest.TestCase):
     def test_evicts_page_used_farthest_in_the_future(self) -> None:
-        """Futuro do processo a partir do indice atual (2): pagina 1 sera
-        reusada imediatamente, pagina 2 mais tarde, pagina 3 nunca mais."""
         process = Process.create(0, "p1", 1, 1)
         process.page_access_sequence = [9, 9, 1, 1, 2]
         process.current_page_access_index = 2
@@ -102,7 +98,6 @@ class OptimalPageReplacementTest(unittest.TestCase):
             config=SimulationConfig.create("alternanciaCircular", 1),
         )
 
-        
         self.assertEqual(victim.owner_pid, "p1")
         self.assertEqual(victim.page_id, 8)
 

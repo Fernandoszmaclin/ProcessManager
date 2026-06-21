@@ -7,6 +7,9 @@ from process_manager.memory.models import MemoryFrame
 class PageReplacementAlgorithm(ABC):
     needs_candidate_frames = True
 
+    def prepare(self, processes: list[Process]) -> None:
+        pass
+
     def on_page_loaded(self, frame: MemoryFrame) -> None:
         pass
 
