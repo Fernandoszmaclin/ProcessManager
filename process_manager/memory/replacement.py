@@ -10,6 +10,14 @@ class PageReplacementAlgorithm(ABC):
     def prepare(self, processes: list[Process]) -> None:
         pass
 
+    def before_page_access(
+        self,
+        process: Process,
+        page_id: int,
+        current_time: int,
+    ) -> None:
+        pass
+
     def on_page_loaded(self, frame: MemoryFrame) -> None:
         pass
 
