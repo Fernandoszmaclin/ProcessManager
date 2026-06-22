@@ -42,8 +42,8 @@ Algoritmos comparados:
 
 - `fifo`: remove a pagina carregada ha mais tempo.
 - `lru`: remove a pagina menos recentemente usada.
-- `nuf`: NFU com aging; a cada ciclo os contadores fazem shift para a direita
-  (`/2`) e a pagina acessada recebe `+128`.
+- `nuf`: remove a pagina com menor contador de uso. Paginas novas entram com
+  contador `128`, e cada hit soma `128` ao contador da pagina acessada.
 - `otimo`: remove a pagina cujo proximo uso esta mais distante no futuro.
 
 Desempates:
@@ -63,4 +63,3 @@ Exemplo:
 ```text
 7|5|5|5|empate
 ```
-
