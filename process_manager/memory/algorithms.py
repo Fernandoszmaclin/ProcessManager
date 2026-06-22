@@ -128,6 +128,92 @@ class LRUPageReplacement(PageReplacementAlgorithm):
     
 
 class NUFPageReplacement(PageReplacementAlgorithm):
+    """
+    NFU (Not Frequently Used) com envelhecimento.
+
+    Implementação alinhada ao molde de `FIFO`/`LRU`:
+    - Buckets por frequência usando `OrderedDict` para desempate por idade
+    - `_frames_by_key` para acesso O(1)
+    - Envelhecimento aplicado em `select_victim()` por tick
+    """
+
+    needs_candidate_frames = False
+
+    def __init__(self) -> None:
+        # freq -> OrderedDict[key -> None]
+        self._global_buckets: dict = {}
+        # pid -> {freq -> OrderedDict[key -> None]}
+        self._local_buckets: defaultdict = defaultdict(dict)
+
+        # (pid,page_id) -> {"frame": MemoryFrame, "freq": int}
+        self._frames_by_key: dict = {}
+
+        # último tick em que envelhecimento foi aplicado
+        self._last_aging_time = -1
+
+    def on_page_loaded(self, frame: MemoryFrame) -> None:
+        key = self._key(frame)
+        freq = 128
+        self._frames_by_key[key] = {"frame": frame, "freq": freq}
+
+        if freq not in self._global_buckets:
+            self._global_buckets[freq] = OrderedDict()
+        self._global_buckets[freq][key] = None
+
+        if freq not in self._local_buckets[frame.owner_pid]:
+            self._local_buckets[frame.owner_pid][freq] = OrderedDict()
+        self._local_buckets[frame.owner_pid][freq][key] = None
+
+    def on_page_accessed(self, frame: MemoryFrame) -> None:
+        key = self._key(frame)
+        meta = self._frames_by_key.get(key)
+        if not meta:
+            return
+
+        old_freq = meta["freq"]
+        new_freq = old_freq + 128
+        meta["freq"] = new_freq
+        pid = frame.owner_pid
+
+        # remove from old buckets (global/local)
+        if old_freq in self._global_buckets:
+            self._global_buckets[old_freq].pop(key, None)
+            if not self._global_buckets[old_freq]:
+                del self._global_buckets[old_freq]
+
+        if old_freq in self._local_buckets[pid]:
+            self._local_buckets[pid][old_freq].pop(key, None)
+            if not self._local_buckets[pid][old_freq]:
+                del self._local_buckets[pid][old_freq]
+
+        # add to new buckets (global/local)
+        if new_freq not in self._global_buckets:
+            self._global_buckets[new_freq] = OrderedDict()
+        self._global_buckets[new_freq][key] = None
+
+        if new_freq not in self._local_buckets[pid]:
+            self._local_buckets[pid][new_freq] = OrderedDict()
+        self._local_buckets[pid][new_freq][key] = None
+
+    def on_page_removed(self, frame: MemoryFrame) -> None:
+        key = self._key(frame)
+        meta = self._frames_by_key.pop(key, None)
+        if not meta:
+            return
+
+        freq = meta["freq"]
+        pid = frame.owner_pid
+
+        if freq in self._global_buckets:
+            self._global_buckets[freq].pop(key, None)
+            if not self._global_buckets[freq]:
+                del self._global_buckets[freq]
+
+        if freq in self._local_buckets[pid]:
+            self._local_buckets[pid][freq].pop(key, None)
+            if not self._local_buckets[pid][freq]:
+                del self._local_buckets[pid][freq]
+
     def select_victim(
         self,
         frames: list[MemoryFrame],
@@ -136,7 +222,83 @@ class NUFPageReplacement(PageReplacementAlgorithm):
         current_time: int,
         config: SimulationConfig,
     ) -> MemoryFrame:
-        raise NotImplementedError("NUF sera implementado em uma etapa futura.")
+        # aplicar envelhecimento no tick atual
+        self._perform_aging(current_time)
+
+        # escolher buckets conforme política
+        buckets = (
+            self._local_buckets[process.pid]
+            if config.memory_policy == "local"
+            else self._global_buckets
+        )
+
+        # se não tivermos estrutura interna (ex: nenhum frame indexado), cair no fallback
+        if not self._frames_by_key:
+            if not frames:
+                raise ValueError("Nenhuma moldura disponivel para substituicao.")
+            return min(
+                frames,
+                key=lambda frame: (
+                    frame.last_used_time,
+                    frame.owner_pid,
+                    frame.page_id,
+                ),
+            )
+
+        if not buckets:
+            raise ValueError("NUF precisa de ao menos uma moldura candidata.")
+
+        min_freq = min(buckets.keys())
+        bucket = buckets[min_freq]
+
+        try:
+            victim_key = next(iter(bucket))
+        except StopIteration:
+            raise ValueError("Bucket de frequência está vazio.")
+
+        return self._frames_by_key[victim_key]["frame"]
+
+    def _perform_aging(self, current_time: int) -> None:
+        if current_time <= self._last_aging_time:
+            return
+        self._last_aging_time = current_time
+
+        # iterar sobre todas as páginas e aplicar decay // 2
+        for key, meta in list(self._frames_by_key.items()):
+            old_freq = meta["freq"]
+            new_freq = old_freq // 2
+            if new_freq == old_freq:
+                continue
+
+            frame = meta["frame"]
+            pid = frame.owner_pid
+
+            # remove from old buckets
+            if old_freq in self._global_buckets:
+                self._global_buckets[old_freq].pop(key, None)
+                if not self._global_buckets[old_freq]:
+                    del self._global_buckets[old_freq]
+
+            if old_freq in self._local_buckets[pid]:
+                self._local_buckets[pid][old_freq].pop(key, None)
+                if not self._local_buckets[pid][old_freq]:
+                    del self._local_buckets[pid][old_freq]
+
+            # update freq
+            meta["freq"] = new_freq
+
+            # add to new buckets
+            if new_freq not in self._global_buckets:
+                self._global_buckets[new_freq] = OrderedDict()
+            self._global_buckets[new_freq][key] = None
+
+            if new_freq not in self._local_buckets[pid]:
+                self._local_buckets[pid][new_freq] = OrderedDict()
+            self._local_buckets[pid][new_freq][key] = None
+
+    @staticmethod
+    def _key(frame: MemoryFrame) -> tuple[str, int]:
+        return (frame.owner_pid, frame.page_id)
 
 
 class OptimalPageReplacement(PageReplacementAlgorithm):
