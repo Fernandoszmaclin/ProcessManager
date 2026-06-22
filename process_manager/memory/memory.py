@@ -27,6 +27,11 @@ class Memory:
         page_id: int,
         current_time: int,
     ) -> None:
+        self.replacement_algorithm.before_page_access(
+            process,
+            page_id,
+            current_time,
+        )
         loaded_frame = self.find_loaded_page(process.pid, page_id)
         if loaded_frame is not None:
             loaded_frame.register_access(current_time)
@@ -97,11 +102,12 @@ class Memory:
 
     def _replacement_candidates(self, process: Process) -> list[MemoryFrame]:
         if self.config.memory_policy == "local":
-            return [
+            local_candidates = [
                 frame
                 for frame in self._frames_by_key.values()
                 if frame.owner_pid == process.pid
             ]
+            return local_candidates or list(self._frames_by_key.values())
         return list(self._frames_by_key.values())
 
     def _local_frame_count(self, pid: str) -> int:

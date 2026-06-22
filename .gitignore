@@ -9,3 +9,6 @@ __pycache__/
 venv/
 entradaEscalonador.txt
 docs/
+input_cases/
+.agents
+.codex
