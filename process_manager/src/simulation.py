@@ -1,6 +1,6 @@
 from collections import deque
 
-from process_manager.memory.memory import Memory
+from process_manager.memory import Memory
 from process_manager.models import Process, ProcessState, SimulationConfig
 from process_manager.schedulers.base import Scheduler
 

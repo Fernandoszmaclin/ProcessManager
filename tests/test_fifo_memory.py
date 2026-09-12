@@ -1,7 +1,7 @@
 import unittest
 
-from process_manager.memory.algorithms import FIFOPageReplacement
-from process_manager.memory.memory import Memory
+from process_manager.memory import FIFOPageReplacement
+from process_manager.memory import Memory
 from process_manager.models import Process, SimulationConfig
 
 

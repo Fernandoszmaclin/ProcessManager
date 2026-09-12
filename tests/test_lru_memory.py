@@ -1,8 +1,8 @@
 import unittest
 
-from process_manager.memory.algorithms import LRUPageReplacement
-from process_manager.memory.memory import Memory
-from process_manager.memory.models import MemoryFrame
+from process_manager.memory import LRUPageReplacement
+from process_manager.memory import Memory
+from process_manager.memory import MemoryFrame
 from process_manager.models import Process, SimulationConfig
 
 class LRUPageReplacementTest(unittest.TestCase):

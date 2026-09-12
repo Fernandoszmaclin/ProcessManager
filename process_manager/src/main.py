@@ -1,8 +1,10 @@
 import copy
 import sys
 
-from process_manager.memory.comparison import MemoryComparisonRunner
-from process_manager.memory.formatter import MemoryResultFormatter
+from process_manager.memory.comparison import (
+    MemoryComparisonRunner,
+    MemoryResultFormatter,
+)
 
 from .parser import parse_input_file
 from .scheduler_factory import create_scheduler

@@ -1,12 +1,12 @@
 import unittest
 
-from process_manager.memory.algorithms import (
+from process_manager.memory import (
     FIFOPageReplacement,
     LRUPageReplacement,
     NUFPageReplacement,
     OptimalPageReplacement,
 )
-from process_manager.memory.memory import Memory
+from process_manager.memory import Memory
 from process_manager.models import Process, SimulationConfig
 
 
