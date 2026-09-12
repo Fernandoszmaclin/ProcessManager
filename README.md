@@ -63,3 +63,14 @@ Exemplo:
 ```text
 7|5|5|5|empate
 ```
+## E/S
+
+Para ativar dispositivos de E/S, a primeira linha recebe `numDispositivosES`, seguida por uma linha de cada dispositivo e pelo campo `chanceRequisitarES` em cada processo:
+
+```text
+alternanciaCircular|2|global|4|1|100|1
+disco|1|3
+0|p1|5|1|2|1 2 1|75
+```
+
+Cada dispositivo informa `idDispositivo|numUsosSimultaneos|tempoOperação`. Processos usando ou aguardando um dispositivo ficam bloqueados; o resumo inclui o tempo bloqueado.
