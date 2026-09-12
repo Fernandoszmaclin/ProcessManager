@@ -1,3 +1,5 @@
+from collections import deque
+
 from process_manager.memory.memory import Memory
 from process_manager.models import Process, ProcessState, SimulationConfig
 from process_manager.schedulers.base import Scheduler
@@ -21,8 +23,7 @@ class Simulation:
         self.current_time = 0                       # relogio virtual da simulacao
 
     def run(self) -> SimulationReport:
-        # copia de lista de processos
-        pending = list(self.processes)
+        pending = deque(self.processes)
         finished_count = 0
 
         while finished_count < len(self.processes):
@@ -69,10 +70,10 @@ class Simulation:
 
         return SimulationReport(self.timeline, self.processes)
 
-    def _admit_new_processes(self, pending: list[Process]) -> None:
+    def _admit_new_processes(self, pending: deque[Process]) -> None:
         # verifica se existe processo pendente e se o tempo de criacao do processo e menor ou igual ao tempo atual da simulacao
         while pending and pending[0].creation_time <= self.current_time:
-            process = pending.pop(0)
+            process = pending.popleft()
             process.state = ProcessState.READY
             self.scheduler.add_process(process)
 

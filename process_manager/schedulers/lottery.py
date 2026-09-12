@@ -3,13 +3,6 @@ from process_manager.models import Process
 from process_manager.schedulers.base import Scheduler
 
 class LotteryScheduler(Scheduler):
-    def __init__(self, cpu_fraction: int) -> None:
-        super().__init__(cpu_fraction)
-        self._ready: list[Process] = []             # fila de processos que estao prontos p/ concorrer ao sorteio
-
-    def add_process(self, process: Process) -> None:
-        self._ready.append(process)                 # processo novo é criado, entra na fila de sorteio
-
     def pick_next(self) -> Process:
         if not self._ready:
             raise ValueError("Nenhum processo está pronto para sorteio.")
@@ -28,14 +21,4 @@ class LotteryScheduler(Scheduler):
                 self._ready.remove(process)
                 return process
                 
-        winner = self._ready.pop()
-        return winner
-
-    def on_process_preempted(self, process: Process) -> None:
-        self._ready.append(process)
-
-    def has_ready_process(self) -> bool:
-        return bool(self._ready)
-
-    def ready_processes(self) -> list[Process]:
-        return list(self._ready)
+        return self._ready.pop()

@@ -27,11 +27,6 @@ class Memory:
         page_id: int,
         current_time: int,
     ) -> None:
-        self.replacement_algorithm.before_page_access(
-            process,
-            page_id,
-            current_time,
-        )
         loaded_frame = self.find_loaded_page(process.pid, page_id)
         if loaded_frame is not None:
             loaded_frame.register_access(current_time)
@@ -54,7 +49,7 @@ class Memory:
         if self.config.memory_policy == "local":
             return (
                 len(self._frames_by_key) < self.config.total_frames
-                and self._local_frame_count(process.pid)
+                and self._frame_count_by_pid[process.pid]
                 < self._process_frame_limit(process)
             )
 
@@ -95,7 +90,8 @@ class Memory:
             current_time,
             self.config,
         )
-        self._remove_frame(victim)
+        self._frames_by_key.pop((victim.owner_pid, victim.page_id))
+        self._frame_count_by_pid[victim.owner_pid] -= 1
         self.replacement_algorithm.on_page_removed(victim)
         self.exchange_count += 1
         return self.load_page(process, page_id, current_time)
@@ -107,16 +103,8 @@ class Memory:
                 for frame in self._frames_by_key.values()
                 if frame.owner_pid == process.pid
             ]
-            return local_candidates or list(self._frames_by_key.values())
-        return list(self._frames_by_key.values())
-
-    def _local_frame_count(self, pid: str) -> int:
-        return self._frame_count_by_pid[pid]
-
-    def _remove_frame(self, frame: MemoryFrame) -> None:
-        key = (frame.owner_pid, frame.page_id)
-        self._frames_by_key.pop(key)
-        self._frame_count_by_pid[frame.owner_pid] -= 1
+            return local_candidates or self.frames
+        return self.frames
 
     def _process_frame_limit(self, process: Process) -> int:
         if (
