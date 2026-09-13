@@ -5,7 +5,6 @@ from process_manager.schedulers.base import Scheduler
 class CFSScheduler(Scheduler):
     def __init__(self, cpu_fraction: int) -> None:
         super().__init__(cpu_fraction)
-        self._ready: list[Process] = []
         self._vruntime_by_pid: dict[str, int] = {}                                  # guarda o tempo virtual que o processo ja executou
         self._executed_by_pid: dict[str, int] = {}                                  # guarda o tempo real total que o processo ja executou
 
@@ -39,13 +38,8 @@ class CFSScheduler(Scheduler):
         self._executed_by_pid[process.pid] = executed
         self._ready.append(process)
 
-    def has_ready_process(self) -> bool:
-        return bool(self._ready)
-
-    def ready_processes(self) -> list[Process]:
-        return list(self._ready)
-
     def _minimum_vruntime(self) -> int:
-        if not self._ready:
-            return 0
-        return min(self._vruntime_by_pid[process.pid] for process in self._ready)
+        return min(
+            (self._vruntime_by_pid[process.pid] for process in self._ready),
+            default=0,
+        )

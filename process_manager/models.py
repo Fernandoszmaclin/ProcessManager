@@ -1,13 +1,14 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from math import ceil
 
 
 class ProcessState(Enum):
-    # ciclo de vida do processo
     NEW = "new"
     READY = "ready"
     RUNNING = "running"
+    BLOCKED = "blocked"
     FINISHED = "finished"
 
 
@@ -20,6 +21,7 @@ class SimulationConfig:
     page_frame_size: int | None = None
     allocation_percentage: int | None = None
     total_frames: int | None = None
+    io_devices: tuple = ()
 
     @classmethod
     def create(
@@ -30,6 +32,7 @@ class SimulationConfig:
         main_memory_size: int | None = None,
         page_frame_size: int | None = None,
         allocation_percentage: int | None = None,
+        io_devices: tuple = (),
     ) -> "SimulationConfig":
         total_frames = None
         if main_memory_size is not None and page_frame_size is not None:
@@ -43,6 +46,7 @@ class SimulationConfig:
             page_frame_size=page_frame_size,
             allocation_percentage=allocation_percentage,
             total_frames=total_frames,
+            io_devices=io_devices,
         )
 
     @property
@@ -55,10 +59,13 @@ class SimulationConfig:
             and self.total_frames is not None
         )
 
+    @property
+    def has_io_config(self) -> bool:
+        return bool(self.io_devices)
+
 
 @dataclass
 class Process:
-    # preenchido pelo parser.py (fixo)
     creation_time: int
     pid: str
     total_time: int
@@ -67,14 +74,14 @@ class Process:
     memory_amount: int | None = None
     page_access_sequence: list[int] = field(default_factory=list)
     virtual_pages: int | None = None
-
-    # controlado por simulation.py a cada tick
     state: ProcessState = ProcessState.NEW
     current_page_access_index: int = 0
-
-    # acumulado por simulation.py ao longo da execucao
     finish_time: int | None = None
     ready_time: int = 0
+    blocked_time: int = 0
+    io_request_chance: int = 0
+    blocked_device: str | None = None
+    io_status: str | None = None
 
     @classmethod
     def create(
@@ -86,6 +93,7 @@ class Process:
         memory_amount: int | None = None,
         page_access_sequence: list[int] | None = None,
         page_frame_size: int | None = None,
+        io_request_chance: int = 0,
     ) -> "Process":
         virtual_pages = None
         if memory_amount is not None and page_frame_size is not None:
@@ -100,11 +108,11 @@ class Process:
             page_access_sequence=page_access_sequence or [],
             virtual_pages=virtual_pages,
             remaining_time=total_time,
+            io_request_chance=io_request_chance,
         )
 
     @property
     def turnaround_time(self) -> int | None:
-        # calculado sob demanda
         if self.finish_time is None:
             return None
         return self.finish_time - self.creation_time

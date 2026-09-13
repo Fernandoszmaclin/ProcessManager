@@ -1,8 +1,10 @@
 import copy
 import sys
 
-from process_manager.memory.comparison import MemoryComparisonRunner
-from process_manager.memory.formatter import MemoryResultFormatter
+from process_manager.memory.comparison import (
+    MemoryComparisonRunner,
+    MemoryResultFormatter,
+)
 
 from .parser import parse_input_file
 from .scheduler_factory import create_scheduler
@@ -15,7 +17,7 @@ def main() -> None:
 
 def run(input_path: str) -> None:
     config, processes = parse_input_file(input_path)                            # funcao para chamar a simulacao a partir da linha de comando
-    memory_processes = copy.deepcopy(processes)
+    memory_processes = copy.deepcopy(processes) if config.has_memory_config else []
     scheduler = create_scheduler(config.algorithm, config.cpu_fraction)         # define qual algoritmo sera usado
     report = Simulation(config, processes, scheduler).run()                     # executa simulacao e gera o relatorio
 

@@ -1,12 +1,18 @@
 from copy import deepcopy
+from dataclasses import dataclass
 
 from process_manager.models import Process, SimulationConfig
-from process_manager.memory.factory import create_page_replacement_algorithm
-from process_manager.memory.memory import Memory
-from process_manager.memory.models import MemorySimulationResult
 from process_manager.src.scheduler_factory import create_scheduler
 from process_manager.src.simulation import Simulation
+from process_manager.memory import create_page_replacement_algorithm, Memory
 
+@dataclass(frozen=True)
+class MemorySimulationResult:
+    fifo_exchanges: int | None = None
+    lru_exchanges: int | None = None
+    nuf_exchanges: int | None = None
+    optimal_exchanges: int | None = None
+    best_algorithm: str | None = None
 
 class MemoryComparisonRunner:
     def __init__(
@@ -57,3 +63,18 @@ class MemoryComparisonRunner:
             return "empate"
 
         return best_algorithms[0]
+
+class MemoryResultFormatter:
+    def format(self, result: MemorySimulationResult) -> str:
+        return (
+            f"{self._format_value(result.fifo_exchanges)}|"
+            f"{self._format_value(result.lru_exchanges)}|"
+            f"{self._format_value(result.nuf_exchanges)}|"
+            f"{self._format_value(result.optimal_exchanges)}|"
+            f"{self._format_value(result.best_algorithm)}"
+        )
+
+    def _format_value(self, value: int | str | None) -> str:
+        if value is None:
+            return ""
+        return str(value)

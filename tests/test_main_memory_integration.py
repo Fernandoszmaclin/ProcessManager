@@ -5,7 +5,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from process_manager.memory.models import MemorySimulationResult
+from process_manager.memory.comparison import MemorySimulationResult
 from process_manager.src.main import run
 
 
