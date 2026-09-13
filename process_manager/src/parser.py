@@ -36,8 +36,6 @@ def _parse_config(
 
 def _parse_device(line) :
     fields = [field.strip() for field in line.split("|")]
-    if len(fields) != 3:
-        raise ValueError("Linha de dispositivo deve ter 3 campos.")
     device_id, simultaneous_uses, operation_time = fields
     simultaneous_uses = int(simultaneous_uses)
     operation_time = int(operation_time)
