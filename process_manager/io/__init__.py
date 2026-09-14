@@ -19,6 +19,7 @@ class IOManager:
         self.active = {device.device_id: [] for device in devices} # active IO on each device
         self.waiting = {device.device_id: deque() for device in devices} # processes waiting IO 
 
+
     def request(self, process, device_id, current_time):
         process.state = ProcessState.BLOCKED
         process.blocked_device = device_id
@@ -52,23 +53,19 @@ class IOManager:
         return released
 
     def next_completion(self):
-        times = [
-            end_time
-            for operations in self.active.values()
-            for _, end_time in operations
-        ]
-        return min(times) if times else None
+        completion_times = []
+        for operations in self.active.values():
+            for _, end_time in operations:
+                completion_times.append(end_time)
+        return min(completion_times, default=None)
 
     def blocked_processes(self):
-        return [
-            process
-            for device_id in self.devices
-            for process, _ in self.active[device_id]
-        ] + [
-            process
-            for queue in self.waiting.values()
-            for process in queue
-        ]
+        blocked = []
+        for operations in self.active.values():
+            blocked.extend(process for process, _ in operations)
+        for queue in self.waiting.values():
+            blocked.extend(queue)
+        return blocked
 
     def _start(self, process, device_id, current_time):
         process.io_status = "usando"
